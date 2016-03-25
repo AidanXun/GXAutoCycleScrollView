@@ -33,6 +33,8 @@ class GXCycleScrollView: UIScrollView {
     
     private var isWebImages: Bool = false
 
+    var placeholderImage: UIImage?
+    
     private var localImages: [UIImage]?
     
     private var webImages: [String]?
@@ -137,9 +139,9 @@ extension GXCycleScrollView {
         
         if isWebImages {
             
-            leftImageView.sd_setImageWithURL(NSURL(string: webImages![leftImageIndex]))
-            midImageView.sd_setImageWithURL(NSURL(string: webImages![midImageIndex]))
-            rightImageView.sd_setImageWithURL(NSURL(string: webImages![rightImageIndex]))
+            leftImageView.sd_setImageWithURL(NSURL(string: webImages![leftImageIndex]), placeholderImage: placeholderImage)
+            midImageView.sd_setImageWithURL(NSURL(string: webImages![midImageIndex]), placeholderImage: placeholderImage)
+            rightImageView.sd_setImageWithURL(NSURL(string: webImages![rightImageIndex]), placeholderImage: placeholderImage)
             
         } else {
             

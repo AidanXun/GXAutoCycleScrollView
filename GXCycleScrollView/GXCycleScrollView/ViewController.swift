@@ -49,6 +49,7 @@ class ViewController: UIViewController {
         
         let view = GXCycleScrollView(frame: CGRectMake(0, UIScreen.mainScreen().bounds.height/2, UIScreen.mainScreen().bounds.width, UIScreen.mainScreen().bounds.height/2), webImages: self.localImages2)
         
+        
         view.autoScrollTimeDelay = 3
         
         return view
