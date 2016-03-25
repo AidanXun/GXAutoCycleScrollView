@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 class GXCycleScrollView: UIScrollView {
     
@@ -14,7 +15,11 @@ class GXCycleScrollView: UIScrollView {
     
     private var currentIndex: Int = 0
     
-    private var maxImageCount: Int = 0
+    private var maxImageCount: Int = 0 {
+        didSet {
+            print("最大数")
+        }
+    }
     
     var autoScrollTimeDelay: NSTimeInterval? {
         didSet {
@@ -25,14 +30,29 @@ class GXCycleScrollView: UIScrollView {
             }
         }
     }
+    
+    private var isWebImages: Bool = false
 
     private var localImages: [UIImage]?
     
-    convenience init(frame: CGRect, images: [UIImage]?) {
+    private var webImages: [String]?
+    
+    convenience init(frame: CGRect, webImages: [String]?) {
         self.init(frame: frame)
         
-        localImages = images
-        maxImageCount = (images?.count)!
+        isWebImages = true
+        setImages(webImages)
+        maxImageCount = (webImages?.count)!
+        setUpUI()
+        
+    }
+    
+    convenience init(frame: CGRect, localImages: [String]?) {
+        self.init(frame: frame)
+        
+        isWebImages = false
+        setImages(localImages)
+        maxImageCount = (localImages?.count)!
         setUpUI()
     }
     
@@ -64,25 +84,46 @@ class GXCycleScrollView: UIScrollView {
         setImage(self.maxImageCount - 1, midImageIndex: 0, rightImageIndex: 1)
     }
     
+    private func setImages(images: [String]?) {
+        
+        
+        
+        if isWebImages {
+            
+           self.webImages = images
+            
+        } else {
+            
+            var temp = [UIImage]()
+            for imageNamed in images! {
+                
+                let image = UIImage(named: imageNamed)!
+                temp.append(image)
+            }
+            
+            self.localImages = temp
+        }
+    }
+    
     // MARK: - 懒加载
     
     private lazy var leftImageView: UIImageView = {
         let leftImageView = UIImageView(frame: CGRectMake(0, 0, self.bounds.width, self.bounds.height))
-        leftImageView.backgroundColor = UIColor.redColor()
+//        leftImageView.backgroundColor = UIColor.redColor()
         
         return leftImageView
     }()
 
     private lazy var midImageView: UIImageView = {
         let midImageView = UIImageView(frame: CGRectMake(self.bounds.width, 0, self.bounds.width, self.bounds.height))
-        midImageView.backgroundColor = UIColor.blueColor()
+//        midImageView.backgroundColor = UIColor.blueColor()
         
         return midImageView
     }()
     
     private lazy var rightImageView: UIImageView = {
         let rightImageView = UIImageView(frame: CGRectMake(self.bounds.width * 2, 0, self.bounds.width, self.bounds.height))
-        rightImageView.backgroundColor = UIColor.yellowColor()
+//        rightImageView.backgroundColor = UIColor.yellowColor()
         
         return rightImageView
     }()
@@ -94,10 +135,18 @@ extension GXCycleScrollView {
     
     private func setImage(leftImageIndex: Int, midImageIndex: Int, rightImageIndex: Int) {
         
-        
-        leftImageView.image = localImages![leftImageIndex]
-        midImageView.image = localImages![midImageIndex]
-        rightImageView.image = localImages![rightImageIndex]
+        if isWebImages {
+            
+            leftImageView.sd_setImageWithURL(NSURL(string: webImages![leftImageIndex]))
+            midImageView.sd_setImageWithURL(NSURL(string: webImages![midImageIndex]))
+            rightImageView.sd_setImageWithURL(NSURL(string: webImages![rightImageIndex]))
+            
+        } else {
+            
+            leftImageView.image = localImages![leftImageIndex]
+            midImageView.image = localImages![midImageIndex]
+            rightImageView.image = localImages![rightImageIndex]
+        }
         
         setContentOffset(CGPoint(x: bounds.width, y: 0), animated: false)
     }
@@ -106,7 +155,7 @@ extension GXCycleScrollView {
         
         if offsetX >= bounds.width * 2 {
             
-            currentIndex++
+            currentIndex += 1
             
             if currentIndex == maxImageCount - 1 {
                 
@@ -123,7 +172,7 @@ extension GXCycleScrollView {
         
         if offsetX <= 0 {
             
-            currentIndex--
+            currentIndex -= 1
             
             if currentIndex == 0 {
                 
@@ -153,7 +202,6 @@ extension GXCycleScrollView: UIScrollViewDelegate {
     @objc func scrollViewDidScroll(scrollView: UIScrollView) {
         
         changePage(scrollView.contentOffset.x)
-        print(scrollView.contentOffset.x)
     }
     
     @objc func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
@@ -176,7 +224,7 @@ extension GXCycleScrollView {
         
         if autoScrollTimeDelay > 0 {
         
-            timer = NSTimer.scheduledTimerWithTimeInterval(autoScrollTimeDelay!, target: self, selector: "autoScroll", userInfo: nil, repeats: true)
+            timer = NSTimer.scheduledTimerWithTimeInterval(autoScrollTimeDelay!, target: self, selector: #selector(GXCycleScrollView.autoScroll), userInfo: nil, repeats: true)
         
             NSRunLoop.currentRunLoop().addTimer(timer!, forMode: NSRunLoopCommonModes)
         }
